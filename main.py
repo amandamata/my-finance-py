@@ -40,6 +40,15 @@ def get_previous_month_start_date():
 def get_previous_month_end_date():
     return (datetime.strptime(end_date, '%Y-%m-%d') - timedelta(days=30)).strftime('%Y-%m-%d')
 
+def get_current_market_value(ticker):
+    try:
+        ticker_data = yf.Ticker(ticker)
+        current_price = ticker_data.history(period='1d')['Close'].iloc[0]
+        return current_price
+    except Exception as e:
+        print(f"Error obtaining current market value for {ticker}: {e}")
+        return None
+
 tickers = ['CMIG3.SA', 'TAEE3.SA', 'TRPL4.SA', 'PSSA3.SA', 'BBAS3.SA', 'SANB4.SA', 'KLBN4.SA']
 end_date = datetime.now().strftime('%Y-%m-%d')
 
@@ -52,6 +61,7 @@ for i, ticker in enumerate(tickers):
 
     current_value, current_quote = calculate_investment_value(ticker, quantity, start_date, end_date)
     total_current += current_value
+    current_market_value = get_current_market_value(ticker)
 
     previous_value, previous_quote = calculate_investment_value(ticker, quantity, get_previous_month_start_date(), get_previous_month_end_date())
     total_previous += previous_value
@@ -63,6 +73,8 @@ for i, ticker in enumerate(tickers):
         formatted_value = "R$ {:.2f}".format(current_value)
         print(f"Investment value (Current): {formatted_value}")
         print("Quote: R${:.2f}".format(current_quote))
+        print("Market Quote: R${:.2f}".format(current_market_value))
+
     else:
         print("Unable to obtain the quote for this ticker (Current).")
 
