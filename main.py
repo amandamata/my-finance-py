@@ -20,6 +20,18 @@ start_date = (datetime.now() - timedelta(days=1)).strftime('%Y-%m-%d')
 end_date = datetime.now().strftime('%Y-%m-%d')
 cp_start_date = (datetime.now() - timedelta(days=364)).strftime('%Y-%m-%d')
 
+def calculate_graham_index(ticker):
+    try:
+        stock_data = yf.Ticker(ticker)
+        earnings_per_share = stock_data.info['trailingEps']
+        book_value_per_share = stock_data.info['bookValue']
+        graham_index = np.sqrt(22.5 * earnings_per_share * book_value_per_share)
+        return graham_index
+
+    except Exception as e:
+        print(f"Error calculating Graham Index for {ticker}: {e}")
+        return None
+
 def calculate_ceiling_price(ticker):
     data = yf.download(ticker, start=cp_start_date, end=datetime.now().strftime('%Y-%m-%d'))
     pe_ratio_average = data['Close'].mean() / data['Adj Close'].mean()
@@ -72,6 +84,8 @@ for i, ticker in enumerate(tickers):
     total_previous += previous_value
     ceiling_price_calculated = calculate_ceiling_price(ticker)
 
+    graham_index_calculated = calculate_graham_index(ticker)
+
     print(f"Ticker: {ticker}")
     print(f"Quantity: {quantity}")
 
@@ -80,6 +94,7 @@ for i, ticker in enumerate(tickers):
         print("Market Quote: R${:.2f}".format(current_market_value))
         print(f"Investment value: {formatted_value}")
         print(f'The estimated ceiling price for {ticker} is: {ceiling_price_calculated:.2f}')
+        print(f'The calculated Graham Index for {ticker} is: {graham_index_calculated:.2f}')
     else:
         print("Unable to obtain the quote for this ticker (Current).")
 
