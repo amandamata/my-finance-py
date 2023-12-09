@@ -1,6 +1,8 @@
-# import yfinance as yf
-# from datetime import datetime, timedelta
 
+import numpy as np
+import pandas as pd
+import yfinance as yf
+from datetime import datetime, timedelta
 
 # for ticker in tickers:
 #     try:
@@ -10,12 +12,19 @@
 #         print("\n")
 #     except Exception as e:
 #         print(f"Error obtaining data for {ticker}: {e}\n")
-import yfinance as yf
-from datetime import datetime, timedelta
 
-tickers = ['CMIG3.SA', 'TAEE3.SA', 'TRPL4.SA', 'PSSA3.SA', 'BBAS3.SA', 'SANB4.SA', 'KLBN4.SA']
+tickers =    ['CMIG3.SA', 'TAEE3.SA', 'TRPL4.SA', 'PSSA3.SA', 'BBAS3.SA', 'SANB4.SA', 'KLBN4.SA']
+quantities = [ 100,        100,        100,        100,        100,        100,        100]
+
 start_date = (datetime.now() - timedelta(days=1)).strftime('%Y-%m-%d')
 end_date = datetime.now().strftime('%Y-%m-%d')
+cp_start_date = (datetime.now() - timedelta(days=364)).strftime('%Y-%m-%d')
+
+def calculate_ceiling_price(ticker):
+    data = yf.download(ticker, start=cp_start_date, end=datetime.now().strftime('%Y-%m-%d'))
+    pe_ratio_average = data['Close'].mean() / data['Adj Close'].mean()
+    ceiling_price = pe_ratio_average * data['Adj Close'].iloc[-1]
+    return ceiling_price
 
 def get_quote(ticker, start, end):
     try:
@@ -49,10 +58,6 @@ def get_current_market_value(ticker):
         print(f"Error obtaining current market value for {ticker}: {e}")
         return None
 
-tickers = ['CMIG3.SA', 'TAEE3.SA', 'TRPL4.SA', 'PSSA3.SA', 'BBAS3.SA', 'SANB4.SA', 'KLBN4.SA']
-end_date = datetime.now().strftime('%Y-%m-%d')
-
-quantities = [12, 12, 12, 12, 12, 12, 12, 12]
 total_current = 0
 total_previous = 0
 
@@ -65,27 +70,26 @@ for i, ticker in enumerate(tickers):
 
     previous_value, previous_quote = calculate_investment_value(ticker, quantity, get_previous_month_start_date(), get_previous_month_end_date())
     total_previous += previous_value
+    ceiling_price_calculated = calculate_ceiling_price(ticker)
 
     print(f"Ticker: {ticker}")
     print(f"Quantity: {quantity}")
 
     if current_value is not None:
         formatted_value = "R$ {:.2f}".format(current_value)
-        print(f"Investment value (Current): {formatted_value}")
-        print("Quote: R${:.2f}".format(current_quote))
         print("Market Quote: R${:.2f}".format(current_market_value))
-
+        print(f"Investment value: {formatted_value}")
+        print(f'The estimated ceiling price for {ticker} is: {ceiling_price_calculated:.2f}')
     else:
         print("Unable to obtain the quote for this ticker (Current).")
 
     if previous_value is not None:
         formatted_previous_value = "R$ {:.2f}".format(previous_value)
-        print(f"Investment value (Previous): {formatted_previous_value}")
-        print("Quote: R${:.2f}".format(previous_quote))
+        print("Previous Market Quote: R${:.2f}".format(previous_quote))
+        print(f"Previous Investment value: {formatted_previous_value}")
     else:
         print("Unable to obtain the quote for this ticker (Previous).")
 
     print("\n")
 
 print("Total (Current): R${:.2f}".format(total_current))
-print("Total (Previous): R${:.2f}".format(total_previous))
