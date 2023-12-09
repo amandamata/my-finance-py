@@ -17,9 +17,10 @@ pip install numpy pandas yfinance
 
 ### Script Configuration
 Adjust the script variables to fit your portfolio:
+```bash
 tickers = ['CMIG3.SA', 'TAEE3.SA', 'TRPL4.SA', 'PSSA3.SA', 'BBAS3.SA', 'SANB4.SA', 'KLBN4.SA']
 quantities = [100, 100, 100, 100, 100, 100, 100]
-
+```
 ### Run the Script
 Execute the script in your preferred Python environment:
 ```bash
