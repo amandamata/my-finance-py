@@ -29,7 +29,7 @@ async function fetchDataFromBackend(availableBalance) {
 function renderFinancialData(data) {
     const appDiv = document.getElementById("app");
     const title = document.createElement("h2");
-    title.textContent = "Brazilian Stocks Apports";
+    title.textContent = "Stocks Apports";
     appDiv.appendChild(title);
 
     const stocksDataTable = createTable(
