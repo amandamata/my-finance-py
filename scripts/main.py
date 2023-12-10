@@ -4,15 +4,6 @@ import pandas as pd
 import yfinance as yf
 from datetime import datetime, timedelta
 
-# for ticker in tickers:
-#     try:
-#         stock_data = yf.download(ticker, start=start_date, end=end_date)
-#         print(f"Data for {ticker} successfully obtained:")
-#         print(stock_data.head())
-#         print("\n")
-#     except Exception as e:
-#         print(f"Error obtaining data for {ticker}: {e}\n")
-
 tickers =    ['CMIG3.SA', 'TAEE3.SA', 'TRPL4.SA', 'PSSA3.SA', 'BBAS3.SA', 'SANB4.SA', 'KLBN4.SA']
 quantities = [ 100,        100,        100,        100,        100,        100,        100]
 
