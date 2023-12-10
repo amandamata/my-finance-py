@@ -4,7 +4,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     updateButton.addEventListener("click", function () {
         const availableBalance = availableBalanceInput.value;
-        
+
         fetchDataFromBackend(availableBalance).then(data => {
             renderFinancialData(data);
         });
@@ -27,47 +27,26 @@ async function fetchDataFromBackend(availableBalance) {
 }
 
 function renderFinancialData(data) {
-    const appDiv = document.getElementById("app");
-    const title = document.createElement("h2");
-    title.textContent = "Stocks Apports";
-    appDiv.appendChild(title);
+    const tableBody = document.querySelector("#investmentTable tbody");
 
-    const stocksDataTable = createTable(
-        ["Ticker", "Market Value", "Quantity", "Apport", "Ceiling Price", "Graham Index"],
-        data.map(stock => [
+    tableBody.innerHTML = "";
+
+    data.forEach(stock => {
+        const row = tableBody.insertRow();
+        const cells = [
             stock.ticker,
-            stock.market_value,
+            stock.market_value.toFixed(2),
             stock.quantity,
-            stock.apport,
-            stock.ceiling_price,
-            stock.graham_index,
-        ])
-    );
-    appDiv.appendChild(stocksDataTable);
-}
+            stock.apport.toFixed(2),
+            stock.ceiling_price.toFixed(2),
+            stock.graham_index.toFixed(2),
+        ];
 
-function createTable(headers, rows) {
-    const table = document.createElement("table");
-
-    const headerRow = document.createElement("tr");
-    headers.forEach(headerText => {
-        const th = document.createElement("th");
-        th.textContent = headerText;
-        headerRow.appendChild(th);
-    });
-    table.appendChild(headerRow);
-
-    rows.forEach(rowData => {
-        const tr = document.createElement("tr");
-        rowData.forEach(cellData => {
-            const td = document.createElement("td");
-            td.textContent = formatTableCell(cellData);
-            tr.appendChild(td);
+        cells.forEach((cell, index) => {
+            const td = row.insertCell(index);
+            td.textContent = formatTableCell(cell);
         });
-        table.appendChild(tr);
     });
-
-    return table;
 }
 
 function formatTableCell(data) {
@@ -75,14 +54,4 @@ function formatTableCell(data) {
         return Number.isInteger(data) ? data.toFixed(0) : data.toFixed(2);
     }
     return data;
-}
-
-async function updateValues() {
-    const availableBalance = parseFloat(document.getElementById("availableBalance").value) || 0;
-    const quantityPerStock = parseInt(document.getElementById("quantityPerStock").value) || 0;
-
-    const response = await fetch(`http://localhost:8080/api/investment_data?availableBalance=${availableBalance}&quantityPerStock=${quantityPerStock}`);
-    const data = await response.json();
-
-    renderFinancialData(data);
 }

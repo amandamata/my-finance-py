@@ -1,13 +1,11 @@
 import yfinance as yf
 import sys
 
-# Cache para armazenar os dados obtidos
 cache = {}
 
 def get_stock_data(ticker):
     key = f"{ticker}"
 
-    # Verifica se os dados estão no cache
     if key in cache:
         return cache[key]
 
@@ -26,7 +24,6 @@ def get_stock_data(ticker):
 
         result = f"{eps},{book_value},{close_price},{adj_close}"
 
-        # Armazena no cache para uso futuro
         cache[key] = result
 
         return result

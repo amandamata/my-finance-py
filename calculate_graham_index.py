@@ -2,13 +2,11 @@ import yfinance as yf
 import sys
 import math
 
-# Cache para armazenar os dados obtidos
 cache = {}
 
 def calculate_graham_index(ticker):
     key = f"{ticker}"
 
-    # Verifica se os dados estão no cache
     if key in cache:
         return cache[key]
 
@@ -21,7 +19,6 @@ def calculate_graham_index(ticker):
     
     intrinsic_value = math.sqrt(22.5 * eps * bvps)
 
-    # Armazena no cache para uso futuro
     cache[key] = intrinsic_value
 
     return intrinsic_value

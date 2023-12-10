@@ -62,7 +62,6 @@ func fetchFinancials(ticker string) map[string]float64 {
 
 func calculateGrahamIndex(ticker string) float64 {
 	if !financialsFetched || time.Since(financialsFetchDate).Hours() > 1 {
-		// Fetch financials for all stocks
 		for _, stock := range tickers {
 			financials := fetchFinancials(stock.Ticker)
 			if financials != nil {
