@@ -19,19 +19,17 @@ type Stock struct {
 }
 
 var (
-	tickers    = []Stock{{"CMIG3.SA", 100}, {"TAEE3.SA", 100}, {"TRPL4.SA", 100}, {"PSSA3.SA", 100}, {"BBAS3.SA", 100}, {"SANB4.SA", 100}, {"KLBN4.SA", 100}}
-	startDate   = time.Now().AddDate(0, 0, -1).Format("2006-01-02")
-	endDate     = time.Now().Format("2006-01-02")
-	cpStartDate = time.Now().AddDate(0, 0, -364).Format("2006-01-02")
+	tickers      = []Stock{{"CMIG3.SA", 100}, {"TAEE3.SA", 100}, {"TRPL4.SA", 100}, {"PSSA3.SA", 100}, {"BBAS3.SA", 100}, {"SANB4.SA", 100}, {"KLBN4.SA", 100}}
+	startDate    = time.Now().AddDate(0, 0, -1).Format("2006-01-02")
+	endDate      = time.Now().Format("2006-01-02")
+	cpStartDate  = time.Now().AddDate(0, 0, -364).Format("2006-01-02")
 )
 
 type InvestmentData struct {
 	Ticker             string  `json:"ticker"`
 	CurrentMarketValue float64 `json:"current_market_value"`
-	InvestmentValue    float64 `json:"investment_value"`
 	CeilingPrice       float64 `json:"ceiling_price"`
 	GrahamIndex        float64 `json:"graham_index"`
-	Quantity           int     `json:"quantity"`
 }
 
 func calculateGrahamIndex(eps, bookValue, closePrice float64) float64 {
@@ -92,35 +90,32 @@ func getRealValues(ticker string) (float64, float64) {
 	return eps, bookValue
 }
 
-func calculateInvestmentValue(ticker string, quantity int, start, end string, totalValue float64) InvestmentData {
+func calculateInvestmentValue(ticker string, start, end string) InvestmentData {
 	currentQuote := getQuote(ticker, start, end)
 	eps, bookValue := getRealValues(ticker)
-	investmentValue := totalValue / float64(len(tickers))
-
 	ceilingPrice := calculateCeilingPrice([]float64{currentQuote})
 	grahamIndex := calculateGrahamIndex(eps, bookValue, currentQuote)
 
 	return InvestmentData{
 		Ticker:             ticker,
 		CurrentMarketValue: currentQuote,
-		InvestmentValue:    investmentValue,
 		CeilingPrice:       ceilingPrice,
 		GrahamIndex:        grahamIndex,
-		Quantity:           quantity,
 	}
 }
 
 func getInvestmentData(w http.ResponseWriter, r *http.Request) {
 	var investmentData []InvestmentData
 
-	var totalValue float64
+	var totalInvestmentValue float64
 	for _, stock := range tickers {
 		currentQuote := getQuote(stock.Ticker, startDate, endDate)
-		totalValue += float64(stock.Quantity) * currentQuote
+		totalInvestmentValue += float64(stock.Quantity) * currentQuote
 	}
 
+
 	for _, stock := range tickers {
-		data := calculateInvestmentValue(stock.Ticker, stock.Quantity, startDate, endDate, totalValue)
+		data := calculateInvestmentValue(stock.Ticker, startDate, endDate)
 		investmentData = append(investmentData, data)
 	}
 

@@ -18,14 +18,13 @@ async function fetchDataFromBackend() {
 
 function renderFinancialData(data) {
     const appDiv = document.getElementById("app");
-
     const title = document.createElement("h2");
     title.textContent = "Brazilian Stocks Apports";
     appDiv.appendChild(title);
 
     const stocksDataTable = createTable(
-        ["Ticker", "Market Value", "Quantity", "Avaiable Value", "Ceiling Price", "Graham Index"],
-        data.map(stock => [stock.ticker, stock.current_market_value, (stock.investment_value/stock.current_market_value), stock.investment_value, stock.ceiling_price, stock.graham_index])
+        ["Ticker", "Market Value", "Ceiling Price", "Graham Index"],
+        data.map(stock => [stock.ticker, stock.current_market_value, stock.ceiling_price, stock.graham_index])
     );
     appDiv.appendChild(stocksDataTable);
 }
