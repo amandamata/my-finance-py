@@ -28,28 +28,53 @@ var (
 
 type InvestmentData struct {
 	Ticker             string  `json:"ticker"`
-	CurrentMarketValue float64 `json:"current_market_value"`
-	InvestmentValue    float64 `json:"investment_value"`
+	MarketValue 	   float64 `json:"market_value"`
+	Quantity           int     `json:"quantity"`
+	Apport    		   float64 `json:"apport"`
 	CeilingPrice       float64 `json:"ceiling_price"`
 	GrahamIndex        float64 `json:"graham_index"`
-	Quantity           int     `json:"quantity"`
 }
 
-func calculateGrahamIndex(eps, bookValue, closePrice float64) float64 {
-	return 22.5 * eps * bookValue / closePrice
-}
+func calculateGrahamIndex(ticker string) float64 {
+	cmd := exec.Command("python3", "calculate_graham_index.py", ticker)
+	output, err := cmd.CombinedOutput()
 
-func calculateCeilingPrice(closePrices []float64) float64 {
-	total := 0.0
-	for _, price := range closePrices {
-		total += price
+	if err != nil {
+		fmt.Printf("Error running Python script for graham index of %s: %v\n", ticker, err)
+		fmt.Printf("Python script output: %s\n", output)
+		return 0
 	}
-	average := total / float64(len(closePrices))
-	return average
+
+	graham, err := strconv.ParseFloat(strings.TrimSpace(string(output)), 64)
+	if err != nil {
+		fmt.Printf("Error parsing Python script output for graham index of %s: %v\n", ticker, err)
+		return 0
+	}
+
+	return graham
+}
+
+func calculateCeilingPrice(ticker, start, end string) float64 {
+	cmd := exec.Command("python3", "calculate_ceiling_price.py", ticker, start, end)
+	output, err := cmd.CombinedOutput()
+
+	if err != nil {
+		fmt.Printf("Error running Python script for ceiling price of %s: %v\n", ticker, err)
+		fmt.Printf("Python script output: %s\n", output)
+		return 0
+	}
+
+	ceilingPrice, err := strconv.ParseFloat(strings.TrimSpace(string(output)), 64)
+	if err != nil {
+		fmt.Printf("Error parsing Python script output for ceiling price of %s: %v\n", ticker, err)
+		return 0
+	}
+
+	return ceilingPrice
 }
 
 func getQuote(ticker, start, end string) float64 {
-	cmd := exec.Command("python3", "get_stock_price.py", ticker)
+	cmd := exec.Command("python3", "get_stock_data.py", ticker)
 	output, err := cmd.CombinedOutput()
 
 	if err != nil {
@@ -68,49 +93,22 @@ func getQuote(ticker, start, end string) float64 {
 	return value
 }
 
-func getRealValues(ticker string) (float64, float64) {
-	cmd := exec.Command("python3", "get_stock_price.py", ticker)
-	output, err := cmd.CombinedOutput()
-
-	if err != nil {
-		fmt.Printf("Error running Python script for %s: %v\n", ticker, err)
-		return 0, 0
-	}
-
-	parts := strings.Split(strings.TrimSpace(string(output)), ",")
-	eps, err := strconv.ParseFloat(parts[0], 64)
-	if err != nil {
-		fmt.Printf("Error converting EPS for %s: %v\n", ticker, err)
-		return 0, 0
-	}
-
-	bookValue, err := strconv.ParseFloat(parts[1], 64)
-	if err != nil {
-		fmt.Printf("Error converting BookValue for %s: %v\n", ticker, err)
-		return 0, 0
-	}
-
-	return eps, bookValue
-}
-
 func calculateInvestmentValue(ticker string, start, end string, availableBalance float64) InvestmentData {
 	currentQuote := getQuote(ticker, start, end)
-	eps, bookValue := getRealValues(ticker)
-	ceilingPrice := calculateCeilingPrice([]float64{currentQuote})
-	grahamIndex := calculateGrahamIndex(eps, bookValue, currentQuote)
-	avaiableForStock := availableBalance / float64(tickersCount)
-	quantity := avaiableForStock / currentQuote
+	ceilingPrice := calculateCeilingPrice(ticker, cpStartDate, end)
+	grahamIndex := calculateGrahamIndex(ticker)
+	avaiableForApport := availableBalance / float64(tickersCount)
+	quantity := avaiableForApport / currentQuote
 
 	return InvestmentData{
 		Ticker:             ticker,
-		CurrentMarketValue: currentQuote,
-		InvestmentValue:    avaiableForStock,
+		MarketValue: 		currentQuote,
+		Quantity:           int(quantity),
+		Apport:    			avaiableForApport,
 		CeilingPrice:       ceilingPrice,
 		GrahamIndex:        grahamIndex,
-		Quantity:           int(quantity),
 	}
 }
-
 
 func getInvestmentData(w http.ResponseWriter, r *http.Request) {
 	var investmentData []InvestmentData

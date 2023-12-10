@@ -22,7 +22,7 @@ def get_stock_data(ticker):
 
 if __name__ == "__main__":
     if len(sys.argv) != 2:
-        print("Usage: python get_stock_price.py <ticker>")
+        print("Usage: python get_stock_data.py <ticker>")
         sys.exit(1)
 
     ticker = sys.argv[1]
