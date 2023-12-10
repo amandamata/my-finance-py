@@ -1,7 +1,16 @@
 import yfinance as yf
 import sys
 
+# Cache para armazenar os dados obtidos
+cache = {}
+
 def get_stock_data(ticker):
+    key = f"{ticker}"
+
+    # Verifica se os dados estão no cache
+    if key in cache:
+        return cache[key]
+
     try:
         stock_data = yf.Ticker(ticker)
         eps = stock_data.info.get('trailingEps', None)
@@ -15,7 +24,12 @@ def get_stock_data(ticker):
             close_price = stock_data.history(period='1d')['Close'].mean()
             adj_close = close_price
 
-        return f"{eps},{book_value},{close_price},{adj_close}"
+        result = f"{eps},{book_value},{close_price},{adj_close}"
+
+        # Armazena no cache para uso futuro
+        cache[key] = result
+
+        return result
     except Exception as e:
         print(f"Error obtaining data for {ticker}: {e}", file=sys.stderr)
         return None

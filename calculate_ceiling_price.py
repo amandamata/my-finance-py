@@ -1,7 +1,17 @@
 import yfinance as yf
 import sys
+import datetime
+
+# Cache para armazenar os dados obtidos
+cache = {}
 
 def calculate_ceiling_price(ticker, start, end):
+    key = f"{ticker}_{start}_{end}"
+
+    # Verifica se os dados estão no cache
+    if key in cache:
+        return cache[key]
+
     try:
         stock_data = yf.Ticker(ticker)
         dividends = stock_data.dividends.loc[start:end]
@@ -9,6 +19,9 @@ def calculate_ceiling_price(ticker, start, end):
 
         dividend_yield = 0.06
         ceiling_price = total_dividends / dividend_yield
+
+        # Armazena no cache para uso futuro
+        cache[key] = ceiling_price
 
         return ceiling_price
     except Exception as e:
