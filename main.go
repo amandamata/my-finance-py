@@ -23,13 +23,16 @@ var (
 	startDate    = time.Now().AddDate(0, 0, -1).Format("2006-01-02")
 	endDate      = time.Now().Format("2006-01-02")
 	cpStartDate  = time.Now().AddDate(0, 0, -364).Format("2006-01-02")
+	tickersCount = float64(len(tickers))
 )
 
 type InvestmentData struct {
 	Ticker             string  `json:"ticker"`
 	CurrentMarketValue float64 `json:"current_market_value"`
+	InvestmentValue    float64 `json:"investment_value"`
 	CeilingPrice       float64 `json:"ceiling_price"`
 	GrahamIndex        float64 `json:"graham_index"`
+	Quantity           int     `json:"quantity"`
 }
 
 func calculateGrahamIndex(eps, bookValue, closePrice float64) float64 {
@@ -90,32 +93,36 @@ func getRealValues(ticker string) (float64, float64) {
 	return eps, bookValue
 }
 
-func calculateInvestmentValue(ticker string, start, end string) InvestmentData {
+func calculateInvestmentValue(ticker string, start, end string, availableBalance float64) InvestmentData {
 	currentQuote := getQuote(ticker, start, end)
 	eps, bookValue := getRealValues(ticker)
 	ceilingPrice := calculateCeilingPrice([]float64{currentQuote})
 	grahamIndex := calculateGrahamIndex(eps, bookValue, currentQuote)
+	avaiableForStock := availableBalance / float64(tickersCount)
+	quantity := avaiableForStock / currentQuote
 
 	return InvestmentData{
 		Ticker:             ticker,
 		CurrentMarketValue: currentQuote,
+		InvestmentValue:    avaiableForStock,
 		CeilingPrice:       ceilingPrice,
 		GrahamIndex:        grahamIndex,
+		Quantity:           int(quantity),
 	}
 }
 
+
 func getInvestmentData(w http.ResponseWriter, r *http.Request) {
 	var investmentData []InvestmentData
-
-	var totalInvestmentValue float64
-	for _, stock := range tickers {
-		currentQuote := getQuote(stock.Ticker, startDate, endDate)
-		totalInvestmentValue += float64(stock.Quantity) * currentQuote
+	availableBalanceParam := r.URL.Query().Get("availableBalance")
+	availableBalance, err := strconv.ParseFloat(availableBalanceParam, 64)
+	if err != nil {
+		http.Error(w, "Error parsing availableBalance: "+err.Error(), http.StatusBadRequest)
+		return
 	}
-
-
+	
 	for _, stock := range tickers {
-		data := calculateInvestmentValue(stock.Ticker, startDate, endDate)
+		data := calculateInvestmentValue(stock.Ticker, startDate, endDate, availableBalance)
 		investmentData = append(investmentData, data)
 	}
 
