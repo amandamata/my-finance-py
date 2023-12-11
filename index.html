@@ -4,26 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="style.css">
-    <title>Stocks Apports</title>
+    <title>Stocks Analysis</title>
 </head>
 <body>
     <div id="app">
-        <input type="number" id="availableBalance" placeholder="Available Balance">
-        <button id="updateButton">Apport</button>
-        <h2>Stocks Apports</h2>
-        <table id="investmentTable">
-            <thead>
-                <tr>
-                    <th>Ticker</th>
-                    <th>Market Value</th>
-                    <th>Quantity</th>
-                    <th>Apport</th>
-                    <th>Ceiling Price</th>
-                    <th>Graham Index</th>
-                </tr>
-            </thead>
-            <tbody></tbody>
-        </table>
+
+        <div id="app">
+            <input type="number" id="availableBalance" placeholder="Available Balance">
+            <div id="stocksContainer"></div>
+            <button id="updateButton">Invest</button>
+        </div>
     </div>
     <script src="script.js"></script>
 </body>

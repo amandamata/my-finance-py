@@ -1,6 +1,6 @@
 body {
     font-family: 'Arial', sans-serif;
-    background-color: #f4f4f4;
+    background-color: #f9f9f9;
     margin: 0;
     padding: 0;
     display: flex;
@@ -10,36 +10,44 @@ body {
 }
 
 #app {
-    background-color: #fff;
+    background-color: #ffffff;
     padding: 20px;
     border-radius: 8px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     text-align: center;
-}
-
-input {
-    padding: 10px;
-    margin-bottom: 10px;
     width: 100%;
     box-sizing: border-box;
+    overflow: hidden;
+}
+
+input, select {
+    padding: 10px;
+    margin-bottom: 20px;
+    width: calc(100% - 20px);
+    box-sizing: border-box;
+    border: 1px solid #ddd;
+    border-radius: 4px;
 }
 
 button {
-    background-color: #4caf50;
-    color: white;
-    padding: 10px 20px;
+    background-color: #6c757d;
+    color: #ffffff;
+    padding: 12px;
     border: none;
     border-radius: 4px;
     cursor: pointer;
     font-size: 16px;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 button:hover {
-    background-color: #45a049;
+    background-color: #495057;
 }
 
 h2 {
-    color: #333;
+    color: #333333;
+    margin-top: 0;
 }
 
 table {
@@ -50,11 +58,70 @@ table {
 
 th, td {
     border: 1px solid #ddd;
-    padding: 10px;
+    padding: 12px;
     text-align: center;
 }
 
 th {
-    background-color: #4caf50;
+    background-color: #6c757d;
+    color: #ffffff;
+}
+
+.stockCheckbox {
+    margin-right: 5px;
+}
+
+#stocksContainer {
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+#stocksContainer label {
+    margin-right: 15px;
+}
+
+button:hover {
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
+
+button {
     color: white;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    width: auto;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+.stockCheckbox {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    background-color: #fff;
+    border: 2px solid #6c757d;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-right: 5px;
+}
+
+.stockCheckbox:checked {
+    background-color: #6c757d;
+}
+
+.stockCheckbox:checked::after {
+    content: '\2713';
+    color: #fff;
+    font-size: 16px;
+    position: absolute;
+    top: 2px;
+    left: 5px;
+}
+
+#stocksContainer label {
+    display: inline-block;
+    vertical-align: middle;
 }

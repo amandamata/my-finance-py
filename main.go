@@ -31,60 +31,75 @@ var (
 
 type InvestmentData struct {
 	Ticker        string  `json:"ticker"`
-	MarketValue   float64 `json:"market_value"`
+	MarketValue   float64 `json:"marketValue"`
 	Quantity      int     `json:"quantity"`
-	Apport        float64 `json:"apport"`
-	CeilingPrice  float64 `json:"ceiling_price"`
-	GrahamIndex   float64 `json:"graham_index"`
+	Invest        float64 `json:"invest"`
+	CeilingPrice  float64 `json:"ceilingPrice"`
+	GrahamIndex   float64 `json:"grahamIndex"`
 }
 
-func fetchFinancials(ticker string) map[string]float64 {
-	cmd := exec.Command("python3", "get_stock_data.py", ticker)
+func getCurrentPrice(ticker string) float64 {
+	cmd := exec.Command("python3", "get_current_price.py", ticker)
 	output, err := cmd.CombinedOutput()
-
+	
 	if err != nil {
-		fmt.Printf("Error running Python script: %v\n", err)
+		fmt.Printf("Error running Python script for current price: %v\n", err)
 		fmt.Printf("Python script output: %s\n", output)
-		return nil
+		return 0
 	}
-
-	parts := strings.Split(strings.TrimSpace(string(output)), ",")
-	marketValue, err := strconv.ParseFloat(parts[2], 64)
+	
+	currentPrice, err := strconv.ParseFloat(strings.TrimSpace(string(output)), 64)
 	if err != nil {
-		fmt.Printf("Error parsing Python script output: %v\n", err)
-		return nil
+		fmt.Printf("Error parsing Python script output for current price: %v\n", err)
+		return 0
+	}
+	
+	return currentPrice
+}
+
+
+func calculateInvestmentValue(selectedStocks []string, availableBalance float64) []InvestmentData {
+	
+	var investmentData []InvestmentData
+	
+	for _, stock := range selectedStocks {
+		ceilingPrice := calculateCeilingPrice(stock, cpStartDate, endDate)
+		avaiableForInvest := availableBalance / float64(len(selectedStocks))
+		graham := calculateGrahamIndex(stock)
+		currentQuote := getCurrentPrice(stock)
+		quantity := avaiableForInvest / currentQuote
+
+		data := InvestmentData{
+			Ticker:       stock,
+			MarketValue:  currentQuote,
+			Quantity:     int(quantity),
+			Invest:       avaiableForInvest,
+			CeilingPrice: ceilingPrice,
+			GrahamIndex:  graham,
+		}
+		investmentData = append(investmentData, data)
 	}
 
-	return map[string]float64{
-		"marketValue": marketValue,
-	}
+	return investmentData
 }
 
 func calculateGrahamIndex(ticker string) float64 {
-	if !financialsFetched || time.Since(financialsFetchDate).Hours() > 1 {
-		for _, stock := range tickers {
-			financials := fetchFinancials(stock.Ticker)
-			if financials != nil {
-				stockDataCache[stock.Ticker] = financials
-			}
-		}
-		financialsFetched = true
-		financialsFetchDate = time.Now()
-	}
+    cmd := exec.Command("python3", "calculate_graham_index.py", ticker)
+    output, err := cmd.CombinedOutput()
 
-	financials, ok := stockDataCache[ticker]
-	if !ok {
-		fmt.Printf("Financial data not found for %s\n", ticker)
-		return 0
-	}
+    if err != nil {
+        fmt.Printf("Error running Python script: %v\n", err)
+        fmt.Printf("Python script output: %s\n", output)
+        return 0
+    }
 
-	marketValue, ok := financials["marketValue"]
-	if !ok {
-		fmt.Printf("Market value not found for %s\n", ticker)
-		return 0
-	}
+    graham, err := strconv.ParseFloat(strings.TrimSpace(string(output)), 64)
+    if err != nil {
+        fmt.Printf("Error parsing Python script output: %v\n", err)
+        return 0
+    }
 
-	return marketValue
+    return graham
 }
 
 func calculateCeilingPrice(ticker, start, end string) float64 {
@@ -102,50 +117,47 @@ func calculateCeilingPrice(ticker, start, end string) float64 {
 		fmt.Printf("Error parsing Python script output for ceiling price of %s: %v\n", ticker, err)
 		return 0
 	}
-
+	
 	return ceilingPrice
 }
 
-func calculateInvestmentValue(ticker string, start, end string, availableBalance float64) InvestmentData {
-	currentQuote := calculateGrahamIndex(ticker)
-	ceilingPrice := calculateCeilingPrice(ticker, cpStartDate, end)
-	avaiableForApport := availableBalance / float64(tickersCount)
-	quantity := avaiableForApport / currentQuote
-
-	return InvestmentData{
-		Ticker:       ticker,
-		MarketValue:  currentQuote,
-		Quantity:     int(quantity),
-		Apport:       avaiableForApport,
-		CeilingPrice: ceilingPrice,
-		GrahamIndex:  currentQuote,
-	}
-}
-
 func getInvestmentData(w http.ResponseWriter, r *http.Request) {
-	var investmentData []InvestmentData
-	availableBalanceParam := r.URL.Query().Get("availableBalance")
-	availableBalance, err := strconv.ParseFloat(availableBalanceParam, 64)
-	if err != nil {
+	fmt.Println("Processing getInvestmentData...")
+	
+    selectedStocksParam := r.URL.Query().Get("selectedStocks")
+    selectedStocks := strings.Split(selectedStocksParam, ",")
+    availableBalanceParam := r.URL.Query().Get("availableBalance")
+    availableBalance, err := strconv.ParseFloat(availableBalanceParam, 64)
+    if err != nil {
 		http.Error(w, "Error parsing availableBalance: "+err.Error(), http.StatusBadRequest)
-		return
-	}
+        return
+    }
+	
+    data := calculateInvestmentValue(selectedStocks, availableBalance)
 
-	for _, stock := range tickers {
-		data := calculateInvestmentValue(stock.Ticker, startDate, endDate, availableBalance)
-		investmentData = append(investmentData, data)
-	}
+    w.Header().Set("Content-Type", "application/json")
+    if err := json.NewEncoder(w).Encode(data); err != nil {
+        fmt.Printf("Error encoding JSON response: %v\n", err)
+        http.Error(w, "Error encoding JSON response", http.StatusInternalServerError)
+    }
+}
+func getAvailableStocks(w http.ResponseWriter, r *http.Request) {
+    var availableStocks []string
+    for _, stock := range tickers {
+        availableStocks = append(availableStocks, stock.Ticker)
+    }
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(investmentData)
+    w.Header().Set("Content-Type", "application/json")
+    json.NewEncoder(w).Encode(availableStocks)
 }
 
 func main() {
 	r := mux.NewRouter()
+	r.HandleFunc("/api/available_stocks", getAvailableStocks).Methods("GET")
 	r.HandleFunc("/api/investment_data", getInvestmentData).Methods("GET")
 
 	fmt.Println("Server is running on :8080")
-
+	
 	headers := handlers.AllowedHeaders([]string{"Content-Type"})
 	origins := handlers.AllowedOrigins([]string{"*"})
 	methods := handlers.AllowedMethods([]string{"GET", "HEAD", "POST", "PUT", "OPTIONS"})
