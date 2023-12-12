@@ -1,53 +1,68 @@
 body {
     font-family: 'Arial', sans-serif;
-    background-color: #f9f9f9;
+    background-color: #f8f8f8;
     margin: 0;
     padding: 0;
     display: flex;
-    justify-content: center;
     align-items: center;
+    justify-content: center;
     height: 100vh;
 }
 
 #app {
-    background-color: #ffffff;
+    width: 60%;
+    background-color: #f0f0f0;
     padding: 20px;
     border-radius: 8px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    text-align: center;
-    width: 100%;
     box-sizing: border-box;
-    overflow: hidden;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: stretch;
+    justify-content: space-between;
 }
 
-input, select {
+#availableBalance {
+    width: calc(32% - 10px);
+    margin-bottom: 10px;
     padding: 10px;
-    margin-bottom: 20px;
-    width: calc(100% - 20px);
     box-sizing: border-box;
-    border: 1px solid #ddd;
+    border: 1px solid #dcdcdc;
     border-radius: 4px;
+    height: 100%;
+    text-align: center;
 }
 
-button {
-    background-color: #6c757d;
-    color: #ffffff;
-    padding: 12px;
+#stockSelect {
+    width: calc(48% - 10px);
+    margin-bottom: 10px;
+    padding: 10px;
+    box-sizing: border-box;
+    border: 1px solid #dcdcdc;
+    border-radius: 4px;
+    height: 100%;
+    appearance: none;
+    background-color: white;
+}
+
+#investButton {
+    width: calc(18% - 10px);
+    margin-bottom: 10px;
+    padding: 10px;
+    box-sizing: border-box;
     border: none;
-    border-radius: 4px;
-    cursor: pointer;
+    background-color: #66a3ff;
+    color: #fff;
+    text-align: center;
+    text-decoration: none;
     font-size: 16px;
-    width: 100%;
-    box-sizing: border-box;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background-color 0.3s;
 }
 
-button:hover {
-    background-color: #495057;
-}
-
-h2 {
-    color: #333333;
-    margin-top: 0;
+#investButton:hover {
+    background-color: #3385ff;
 }
 
 table {
@@ -57,71 +72,68 @@ table {
 }
 
 th, td {
-    border: 1px solid #ddd;
     padding: 12px;
-    text-align: center;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
 }
 
 th {
-    background-color: #6c757d;
-    color: #ffffff;
-}
-
-.stockCheckbox {
-    margin-right: 5px;
-}
-
-#stocksContainer {
-    margin-top: 10px;
-    margin-bottom: 10px;
-}
-
-#stocksContainer label {
-    margin-right: 15px;
-}
-
-button:hover {
-    margin-top: 5px;
-    margin-bottom: 5px;
-}
-
-button {
+    background-color: #66a3ff;
     color: white;
-    padding: 8px 16px;
+}
+
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+th, td {
+    padding: 12px;
+    text-align: center;
+    border-bottom: 1px solid #ddd;
+}
+
+th {
+    background-color: #66a3ff;
+    color: white;
+}
+
+table {
+    border-spacing: 0;
+}
+
+th, td {
+    border: 1px solid #ddd;
+}
+
+th, td {
+    padding: 15px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+th {
+    background-color: #a6c3ff;
+    color: white;
+}
+
+
+#backButton {
+    margin-top: 20px;
+    padding: 10px;
+    background-color: #66a3ff;
+    color: white;
     border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 14px;
-    width: auto;
-    margin-top: 10px;
-    margin-bottom: 10px;
-}
-
-.stockCheckbox {
-    display: inline-block;
-    width: 20px;
-    height: 20px;
-    background-color: #fff;
-    border: 2px solid #6c757d;
-    border-radius: 4px;
-    cursor: pointer;
-    margin-right: 5px;
-}
-
-.stockCheckbox:checked {
-    background-color: #6c757d;
-}
-
-.stockCheckbox:checked::after {
-    content: '\2713';
-    color: #fff;
+    text-align: center;
+    text-decoration: none;
     font-size: 16px;
-    position: absolute;
-    top: 2px;
-    left: 5px;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background-color 0.3s;
 }
 
-#stocksContainer label {
-    display: inline-block;
-    vertical-align: middle;
+#backButton:hover {
+    background-color: #3385ff;
 }

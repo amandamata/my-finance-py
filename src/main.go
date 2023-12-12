@@ -29,10 +29,10 @@ var (
 type InvestmentData struct {
 	Ticker        string  `json:"ticker"`
 	MarketValue   float64 `json:"marketValue"`
-	Quantity      int     `json:"quantity"`
-	Invest        float64 `json:"invest"`
 	CeilingPrice  float64 `json:"ceilingPrice"`
 	GrahamIndex   float64 `json:"grahamIndex"`
+	Quantity      int     `json:"quantity"`
+	Invest        float64 `json:"invest"`
 }
 
 func getCurrentPrice(ticker string) float64 {
@@ -105,10 +105,10 @@ func calculateInvestmentValue(selectedStocks []string, availableBalance float64)
 		data := InvestmentData{
 			Ticker:       stock,
 			MarketValue:  currentQuote,
-			Quantity:     int(quantity),
-			Invest:       availableForInvest,
 			CeilingPrice: ceilingPrice,
 			GrahamIndex:  graham,
+			Quantity:     int(quantity),
+			Invest:       availableForInvest,
 		}
 		investmentData = append(investmentData, data)
 	}
