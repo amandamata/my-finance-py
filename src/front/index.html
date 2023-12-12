@@ -4,17 +4,111 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet" />
     <title>Stocks Analysis</title>
 </head>
 <body>
     <div id="app">
-
-        <div id="app">
-            <input type="number" id="availableBalance" placeholder="Available Balance">
-            <div id="stocksContainer"></div>
-            <button id="updateButton">Invest</button>
-        </div>
+        <input type="number" id="availableBalance" placeholder="Available Balance">
+        <select id="stockSelect" multiple="multiple"></select>
+        <button id="investButton">Invest</button>
     </div>
-    <script src="script.js"></script>
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            $('#stockSelect').select2({
+                placeholder: 'Select stocks',
+                allowClear: true,
+                tags: true,
+            });
+
+            $('#investButton').click(function () {
+                const availableBalance = $('#availableBalance').val();
+                const selectedStocks = $('#stockSelect').val();
+                const params = {
+                    availableBalance: availableBalance,
+                    selectedStocks: selectedStocks.join(),
+                };
+
+                fetchInvestmentData(params);
+            });
+        });
+
+        const appDiv = document.getElementById("app");
+
+        function clearAppDiv() {
+            while (appDiv.firstChild) {
+                appDiv.removeChild(appDiv.firstChild);
+            }
+        }
+
+        async function fetchInvestmentData(params) {
+            try {
+
+                const url = new URL('http://localhost:8080/api/investment_data');
+                url.searchParams.append('availableBalance', params.availableBalance);
+                url.searchParams.append('selectedStocks', params.selectedStocks);
+
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    renderFinancialData(data);
+                } else {
+                    console.error('Error fetching data from backend:', response.status, response.statusText);
+                }
+            } catch (error) {
+                console.error('Error fetching data:', error);
+            }
+        }
+
+        function formatCurrency(value) {
+            return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
+        }
+
+        function renderFinancialData(data) {
+
+            const table = document.createElement("table");
+
+            clearAppDiv();
+
+            table.border = "1";
+
+            const headerRow = table.insertRow();
+            for (const key in data[0]) {
+                const headerCell = document.createElement("th");
+                headerCell.textContent = key.charAt(0).toUpperCase() + key.slice(1);
+                headerRow.appendChild(headerCell);
+            }
+
+            data.forEach(item => {
+                const row = table.insertRow();
+                for (const key in item) {
+                    const cell = row.insertCell();
+                    const formattedValue = key === "marketValue" || key === "ceilingPrice" || key === "invest" || key === "grahamIndex"
+                        ? formatCurrency(Number(item[key]))
+                        : item[key];
+                    cell.textContent = formattedValue;
+                }
+            });
+
+            appDiv.appendChild(table);
+
+            const backButton = document.createElement("button");
+            backButton.textContent = "Back";
+            backButton.addEventListener("click", function () {
+                window.location.reload();
+            });
+            appDiv.appendChild(backButton);
+        }
+    </script>
 </body>
 </html>

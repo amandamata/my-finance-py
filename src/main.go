@@ -18,11 +18,9 @@ type Stock struct {
 }
 
 var (
-	tickers            = []Stock{{"CMIG3.SA"},{"TAEE3.SA"},{"TRPL4.SA"},{"PSSA3.SA"},{"BBAS3.SA"},{"SANB4.SA"},{"KLBN4.SA"}}
 	startDate          = time.Now().AddDate(0, 0, -1).Format("2006-01-02")
 	endDate            = time.Now().Format("2006-01-02")
 	cpStartDate        = time.Now().AddDate(0, 0, -364).Format("2006-01-02")
-	tickersCount       = float64(len(tickers))
 	stockDataCache     = make(map[string]map[string]float64)
 	financialsFetched  = false
 	financialsFetchDate time.Time
@@ -119,39 +117,29 @@ func calculateInvestmentValue(selectedStocks []string, availableBalance float64)
 }
 
 func getInvestmentData(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("Processing getInvestmentData...")
+    fmt.Println("Processing getInvestmentData...")
 
-	selectedStocksParam := r.URL.Query().Get("selectedStocks")
-	selectedStocks := strings.Split(selectedStocksParam, ",")
-	availableBalanceParam := r.URL.Query().Get("availableBalance")
-	availableBalance, err := strconv.ParseFloat(availableBalanceParam, 64)
-	if err != nil {
-		http.Error(w, "Error parsing availableBalance: "+err.Error(), http.StatusBadRequest)
-		return
-	}
+    selectedStocksParam := r.URL.Query().Get("selectedStocks")
+    selectedStocks := strings.Split(selectedStocksParam, ",")
+    availableBalanceParam := r.URL.Query().Get("availableBalance")
+    availableBalance, err := strconv.ParseFloat(availableBalanceParam, 64)
+    if err != nil {
+        http.Error(w, "Error parsing availableBalance: "+err.Error(), http.StatusBadRequest)
+        return
+    }
 
-	data := calculateInvestmentValue(selectedStocks, availableBalance)
+    data := calculateInvestmentValue(selectedStocks, availableBalance)
 
-	w.Header().Set("Content-Type", "application/json")
-	if err := json.NewEncoder(w).Encode(data); err != nil {
-		fmt.Printf("Error encoding JSON response: %v\n", err)
-		http.Error(w, "Error encoding JSON response", http.StatusInternalServerError)
-	}
+    w.Header().Set("Content-Type", "application/json")
+    if err := json.NewEncoder(w).Encode(data); err != nil {
+        fmt.Printf("Error encoding JSON response: %v\n", err)
+        http.Error(w, "Error encoding JSON response", http.StatusInternalServerError)
+    }
 }
 
-func getAvailableStocks(w http.ResponseWriter, r *http.Request) {
-	var availableStocks []string
-	for _, stock := range tickers {
-		availableStocks = append(availableStocks, stock.Ticker)
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(availableStocks)
-}
 
 func main() {
 	r := mux.NewRouter()
-	r.HandleFunc("/api/available_stocks", getAvailableStocks).Methods("GET")
 	r.HandleFunc("/api/investment_data", getInvestmentData).Methods("GET")
 
 	fmt.Println("Server is running on :8080")
