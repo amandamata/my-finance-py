@@ -36,7 +36,7 @@ type InvestmentData struct {
 }
 
 func getCurrentPrice(ticker string) float64 {
-	cmd := exec.Command("python3", "python/get_current_price.py", ticker)
+	cmd := exec.Command("python3", "python/get_current_price.py", ticker, startDate, endDate)
 	output, err := cmd.CombinedOutput()
 
 	if err != nil {

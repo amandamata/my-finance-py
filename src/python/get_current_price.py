@@ -3,26 +3,28 @@ import sys
 
 cache = {}
 
-def get_current_price(ticker):
+def get_current_price(ticker, start, end):
     key = f"{ticker}"
 
     if key in cache:
         return cache[key]
 
     ticker = yf.Ticker(ticker)
-    current_price = ticker.history(period='1d')['Close'].iloc[-1]
+    current_price = ticker.history(start=start, end=end)['Close'].iloc[-1]
     cache[key] = current_price
     return current_price
 
 if __name__ == "__main__":
-    if len(sys.argv) != 2:
-        print("Usage: python get_current_price.py <ticker>")
+    if len(sys.argv) != 4:
+        print("Usage: python get_current_price.py <ticker> <start> <end>")
         sys.exit(1)
 
     ticker = sys.argv[1]
+    start = sys.argv[2]
+    end = sys.argv[3]
 
     try:
-        result = get_current_price(ticker)
+        result = get_current_price(ticker, start, end)
         if result is not None:
             print(result)
         else:
